@@ -1,0 +1,557 @@
+{
+  "name": "Whatsapp glicoScan",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "webhook",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        -80
+      ],
+      "id": "f7cbf840-84a3-4014-be4e-d3fa8fc307d6",
+      "name": "Webhook",
+      "webhookId": "0868fa46-f74b-4034-bdcb-fabffeab9233"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "66febee1-2ce6-44cc-b47d-8e430fa9c842",
+              "name": "session",
+              "value": "={{ $json.body.session }}",
+              "type": "string"
+            },
+            {
+              "id": "bb0830b9-5956-401b-b1f3-f3f5e230e19b",
+              "name": "chatId",
+              "value": "={{ $json.body.payload.from }}",
+              "type": "string"
+            },
+            {
+              "id": "13b1c938-515a-4b42-ae2f-06f3a2f91ab8",
+              "name": "pushName",
+              "value": "={{ $json.body.me.pushName }}",
+              "type": "string"
+            },
+            {
+              "id": "d4914801-0f86-4992-acef-7f7bc4aa05bf",
+              "name": "payload_id",
+              "value": "={{ $json.body.payload.id }}",
+              "type": "string"
+            },
+            {
+              "id": "0b6b1392-1ea0-4bd4-9d39-eef673cd1f86",
+              "name": "event",
+              "value": "={{ $json.body.event }}",
+              "type": "string"
+            },
+            {
+              "id": "76e024d4-01fd-4536-912d-fcbeb8271be3",
+              "name": "message",
+              "value": "={{ $json.body.payload.body }}",
+              "type": "string"
+            },
+            {
+              "id": "fb4fd731-6d37-457c-88ce-25c3c8156b41",
+              "name": "fromMe",
+              "value": "={{ $json.body.payload.fromMe }}",
+              "type": "string"
+            },
+            {
+              "id": "2d502705-31cc-484c-818b-7e0123859c4e",
+              "name": "image",
+              "value": "={{ $json.body.payload.media.url }}",
+              "type": "string"
+            },
+            {
+              "id": "724516ee-f818-465c-aadc-146f57c3e854",
+              "name": "hasMedia",
+              "value": "={{ $json.body.payload.hasMedia }}",
+              "type": "string"
+            },
+            {
+              "id": "4dca32ca-c707-4c73-a91c-7515687cc30d",
+              "name": "mediaType",
+              "value": "={{ $json.body.payload._data.Info.MediaType }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        224,
+        -80
+      ],
+      "id": "72ca4df4-5445-4d9e-b047-4994b2e2ac1f",
+      "name": "Dados"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.event }}",
+                    "rightValue": "message",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "960e0f8a-3c35-41ba-8132-e06fbac19165"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "609f16b6-7982-427e-805e-c05be3ac3787",
+                    "leftValue": "={{ $json.message }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "notEmpty",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.3,
+      "position": [
+        672,
+        16
+      ],
+      "id": "ad063777-f19b-42aa-baa7-1d54dff902d4",
+      "name": "Switch-message"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Dados').item.json.message }}",
+        "options": {
+          "systemMessage": "Você é uma assistente que sabe tudo sobre aferição de glicose por meio de análise de uma imagem colorimétrica de um papel reagente em contato com saliva."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        896,
+        16
+      ],
+      "id": "dc1a5a7c-9b8e-4dc4-aa7b-cf41c46a91ce",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.0-flash",
+        "options": {
+          "temperature": 0.1
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        864,
+        224
+      ],
+      "id": "58e29ff0-981b-45c9-8268-91320956283d",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "j60fCmA9tEze5apj",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Dados').item.json.chatId }}",
+        "sessionTTL": 3600,
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryRedisChat",
+      "typeVersion": 1.5,
+      "position": [
+        1040,
+        240
+      ],
+      "id": "ecea5b56-1d1d-4b29-883d-05085bf10ce9",
+      "name": "Redis Chat Memory",
+      "credentials": {
+        "redis": {
+          "id": "nulqi91yNQIVDtV2",
+          "name": "Redis account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "Chatting",
+        "operation": "Send Seen",
+        "session": "={{ $('Dados').item.json.session }}",
+        "chatId": "={{ $('Dados').item.json.chatId }}",
+        "messageId": "={{ $('Dados').item.json.payload_id }}",
+        "participant": "",
+        "requestOptions": {}
+      },
+      "type": "n8n-nodes-waha.WAHA",
+      "typeVersion": 202411,
+      "position": [
+        1248,
+        16
+      ],
+      "id": "c60d6637-6c7a-4171-8e0e-4ecb16f30793",
+      "name": "Send Seen",
+      "credentials": {
+        "wahaApi": {
+          "id": "zueNblXSQ87QL5xY",
+          "name": "WAHA account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "Chatting",
+        "operation": "Send Text",
+        "session": "={{ $('Dados').item.json.session }}",
+        "chatId": "={{ $('Dados').item.json.chatId }}",
+        "text": "={{ $('AI Agent').item.json.output }}",
+        "requestOptions": {}
+      },
+      "type": "n8n-nodes-waha.WAHA",
+      "typeVersion": 202411,
+      "position": [
+        1472,
+        16
+      ],
+      "id": "ebf41b32-6007-469e-8643-e15dbbec5e41",
+      "name": "Send a text message",
+      "credentials": {
+        "wahaApi": {
+          "id": "zueNblXSQ87QL5xY",
+          "name": "WAHA account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "d6c13bee-aaaa-4d61-abe9-2e9780287e58",
+              "leftValue": "={{ $json.hasMedia }}",
+              "rightValue": "true",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "98c5ac99-2a38-4025-86d7-79460610b741",
+              "leftValue": "={{ $json.mediaType }}",
+              "rightValue": "image",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        448,
+        -80
+      ],
+      "id": "1b99ccd8-a19a-4839-9c56-00abf3d9c695",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=http://host.docker.internal:9197/api/v1/analyze",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "imagem_url",
+              "value": "={{ $json.image }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        832,
+        -192
+      ],
+      "id": "b8fe860a-9695-4f21-9970-6d70e7a05967",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ba3e9841-8e6b-4091-a094-65b8641240aa",
+              "name": "image",
+              "value": "={{ $json[\"image\"].replace(\"localhost\", \"host.docker.internal\") }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "include": "except",
+        "excludeFields": "image",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        608,
+        -192
+      ],
+      "id": "a205bf61-c3f2-494d-8a7d-04baf34159e3",
+      "name": "Tratar url imagem"
+    },
+    {
+      "parameters": {
+        "resource": "Chatting",
+        "operation": "Send Seen",
+        "session": "={{ $('Dados').item.json.session }}",
+        "chatId": "={{ $('Dados').item.json.chatId }}",
+        "messageId": "={{ $('Dados').item.json.payload_id }}",
+        "participant": "",
+        "requestOptions": {}
+      },
+      "type": "n8n-nodes-waha.WAHA",
+      "typeVersion": 202411,
+      "position": [
+        1040,
+        -192
+      ],
+      "id": "97bb3105-8ed2-445c-b162-621abeebf571",
+      "name": "Imagem vista",
+      "credentials": {
+        "wahaApi": {
+          "id": "zueNblXSQ87QL5xY",
+          "name": "WAHA account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "Chatting",
+        "operation": "Send Text",
+        "session": "={{ $('Dados').item.json.session }}",
+        "chatId": "={{ $('Dados').item.json.chatId }}",
+        "text": "=Resultado da sua aferição: \n\nNível de glucose detectado: {{ $('HTTP Request').item.json.glucose_mg_dl }} mg/dl\nSituação: {{ $('HTTP Request').item.json.range }}\n\nObrigado(a) pela preferência!",
+        "requestOptions": {}
+      },
+      "type": "n8n-nodes-waha.WAHA",
+      "typeVersion": 202411,
+      "position": [
+        1248,
+        -192
+      ],
+      "id": "d61ef474-65e0-4330-85b7-606e5c84bb89",
+      "name": "Enviar relatório aferição",
+      "credentials": {
+        "wahaApi": {
+          "id": "zueNblXSQ87QL5xY",
+          "name": "WAHA account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Dados",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Dados": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch-message": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Redis Chat Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Send Seen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Seen": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Tratar url imagem",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Switch-message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Imagem vista",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tratar url imagem": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Imagem vista": {
+      "main": [
+        [
+          {
+            "node": "Enviar relatório aferição",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "c15bcc05-0594-482f-92d9-c44028a7f8c7",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "4423927cc8966524d39bf6dcdd3d191ce0e8508c2ce39c2783d7b5bc5f789442"
+  },
+  "id": "HFCVfB4AZewZ88la",
+  "tags": []
+}
