@@ -20,16 +20,15 @@ O objetivo principal é permitir que o usuário envie uma **foto do papel reagen
 O fluxo completo funciona assim:
 
 ```
-Usuário → WhatsApp → n8n → Servidor FastAPI → Algoritmo de Análise da Cor → n8n → WhatsApp
+Usuário → WhatsApp → n8n → Servidor glicoscan → Algoritmo de Análise da Cor → n8n → WhatsApp
 ```
 
 O projeto é modular e composto por:
 
 * **Workflow n8n** para integração e orquestração
-* **API FastAPI** para processamento das imagens
-* **Pipeline OpenCV** para extração colorimétrica
-* **Container Docker** para deploy da API
-* **Termo de consentimento** (LGPD)
+* **API Waha** para a comunicação com o Whatsapp (webhook)
+* **API glicoscan** para processamento das imagens
+* **Container Docker** para deploy da API e demais ferramentas
 
 ---
 
@@ -43,7 +42,7 @@ O projeto é modular e composto por:
                                                │   HTTP POST 
                                                ▼             
                                         ┌─────────────┐     
-                                        │   FastAPI   │ 
+                                        │  glicoscan  |
                                         │   (Docker)  │
                                         └─────────────┘
 ```
@@ -54,12 +53,17 @@ O projeto é modular e composto por:
 
 ```
 /
-├── fastapi_app/
+├── app/
 │   └── main.py
-├── preprocessing.py
-├── workflow.json
+|   └── preprocessing.py
+|   └── model.py
+|   └── preprocess_extract.py
+├── arquivos/
+│   └── fluxo_n8n/
+|       └── workflow.json
 ├── Dockerfile
-├── consent.txt
+├── docker-compose.yml
+├── requirements.txt
 └── README.md
 ```
 
@@ -106,23 +110,6 @@ A API recebe um arquivo `.jpg/.png` e retorna:
 POST /analyze
 ```
 
-### Código (fastapi_app/main.py)
-
-```python
-from fastapi import FastAPI, UploadFile, File
-from preprocessing import process_image
-
-app = FastAPI()
-
-@app.post("/analyze")
-async def analyze(file: UploadFile = File(...)):
-    contents = await file.read()
-    result = process_image(contents)
-    return {"glucose_estimate": result}
-```
-
----
-
 # 📌 6. Pipeline de Processamento da Imagem (OpenCV)
 
 Arquivo `preprocessing.py`
@@ -131,78 +118,45 @@ Arquivo `preprocessing.py`
 * Calcula valor médio de brilho/intensidade
 * Mapeia o valor em uma curva simples (placeholder)
 
-```python
-import numpy as np
-import cv2
-
-def process_image(image_bytes):
-    np_arr = np.frombuffer(image_bytes, np.uint8)
-    img = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
-    hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-    mean_val = hsv[:,:,2].mean()
-    glucose_estimate = int((mean_val / 255) * 200)
-    return glucose_estimate
-```
-
-> 🔧 **Obs:** esse modelo é apenas demonstrativo e deve ser ajustado com uma curva real de calibração.
-
 ---
 
 # 📌 7. Dockerfile
 
 ```dockerfile
-FROM python:3.10-slim
+FROM python:3.11-slim
 WORKDIR /app
-COPY . .
-RUN pip install fastapi uvicorn opencv-python-headless numpy
-CMD ["uvicorn", "fastapi_app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+COPY requirements.txt ./
+RUN pip install --no-cache-dir -r requirements.txt
+COPY app ./app
+ENV PYTHONUNBUFFERED=1
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "9197"]
 ```
 
 ### Como rodar com Docker
 
 ```bash
-docker build -t glicose-api .
-docker run -p 8000:8000 glicose-api
+docker build -t glicoscan .
+docker run -p 8000:8000 glicoscan
 ```
-
-Acesse:
-
-```
-http://localhost:8000/docs
-```
-
----
 
 # 📌 8. Testando no Postman
 
 ### Requisição
 
 ```
-POST http://localhost:8000/analyze
+POST http://localhost:9197/analyze
 ```
 
 ### Body
 
 * Form‑Data
-* Key: **file**
-* Tipo: *File*
-* Enviar imagem da tira reagente
+* Key: **imagem_url**
+* Tipo: *Text*
+* Enviar o caminho da imagem da tira reagente
 
 ---
 
-# 📌 9. Termo de Consentimento (LGPD)
-
-Incluído no arquivo:
-
-```
-consent.txt
-```
-
-Pode ser enviado automaticamente ao usuário antes da primeira análise.
-
----
-
-# 📌 10. Possíveis Erros e Soluções
+# 📌 09. Possíveis Erros e Soluções
 
 ### ❗ Erro: "Port should be >= 0 and < 65536"
 
@@ -219,7 +173,7 @@ Esse caractere é um **ZERO‑WIDTH SPACE (U+2060)**.
 
 ---
 
-# 📌 11. Melhorias Futuras
+# 📌 10. Melhorias Futuras
 
 * Modelo de regressão calibrado com amostras reais
 * Normalização de iluminação usando gray‑world
@@ -228,7 +182,7 @@ Esse caractere é um **ZERO‑WIDTH SPACE (U+2060)**.
 
 ---
 
-# 📌 12. Autores
+# 📌 11. Autores
 
 Projeto desenvolvido para fins acadêmicos.
 
