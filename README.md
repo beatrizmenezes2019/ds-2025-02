@@ -2,3 +2,246 @@
 Disciplina Design de Software 2025/02
 
 Vídeo demonstrativo MVP: https://drive.google.com/file/d/1MBBBKJhMbe3V53hnZwdeKVBIHmVnjdhn/view?usp=drive_link
+
+# Projeto de Aferição de Glicose via WhatsApp + n8n + FastAPI
+
+Este repositório contém o projeto completo de um sistema capaz de **analisar imagens de papel reagente impregnado com saliva** para estimar o nível de glicose do usuário. A solução integra **WhatsApp → n8n → FastAPI (com OpenCV)**, retornando ao usuário um valor estimado de glicose.
+
+---
+
+# 📌 1. Visão Geral do Projeto
+
+O objetivo principal é permitir que o usuário envie uma **foto do papel reagente pelo WhatsApp**, e o sistema retorne:
+
+* O valor estimado de glicose (mg/dL)
+* A classificação clínica (normal, pré‑diabetes, hiperglicemia, hipoglicemia)
+* Recomendações iniciais
+
+O fluxo completo funciona assim:
+
+```
+Usuário → WhatsApp → n8n → Servidor FastAPI → Algoritmo de Análise da Cor → n8n → WhatsApp
+```
+
+O projeto é modular e composto por:
+
+* **Workflow n8n** para integração e orquestração
+* **API FastAPI** para processamento das imagens
+* **Pipeline OpenCV** para extração colorimétrica
+* **Container Docker** para deploy da API
+* **Termo de consentimento** (LGPD)
+
+---
+
+# 📌 2. Arquitetura da Solução
+
+```
+┌────────────────┐      ┌─────────────┐      ┌─────────────┐
+│   Usuário      │ ---> │  WhatsApp   │ ---> │     n8n     │
+└────────────────┘      └─────────────┘      └─────────────┘
+                                               │             
+                                               │   HTTP POST 
+                                               ▼             
+                                        ┌─────────────┐     
+                                        │   FastAPI   │ 
+                                        │   (Docker)  │
+                                        └─────────────┘
+```
+
+---
+
+# 📌 3. Estrutura do Repositório
+
+```
+/
+├── fastapi_app/
+│   └── main.py
+├── preprocessing.py
+├── workflow.json
+├── Dockerfile
+├── consent.txt
+└── README.md
+```
+
+---
+
+# 📌 4. Integração com WhatsApp via n8n
+
+A integração funciona através de:
+
+* **Node WhatsApp (Meta Cloud API)** ou **WhatsApp Business API**
+* Recebimento da imagem enviada pelo usuário
+* Disparo de requisição HTTP à API FastAPI
+* Retorno da resposta processada ao usuário
+
+### Como importar o workflow no n8n
+
+1. Abra o n8n (`http://localhost:5678`)
+2. Clique em **Workflows → Import**
+3. Faça upload do arquivo `workflow.json`
+4. Salve o workflow
+5. Adicione suas **Credenciais** (WhatsApp, HTTP Request)
+6. Ative o workflow no botão **Active**
+
+### Pontos de atenção
+
+* A URL do Webhook muda conforme o ambiente
+* Nodes de WhatsApp precisam de Token e ID de número
+
+---
+
+# 📌 5. API FastAPI
+
+A API recebe um arquivo `.jpg/.png` e retorna:
+
+```json
+{
+  "glucose_estimate": 134
+}
+```
+
+### Endpoint
+
+```
+POST /analyze
+```
+
+### Código (fastapi_app/main.py)
+
+```python
+from fastapi import FastAPI, UploadFile, File
+from preprocessing import process_image
+
+app = FastAPI()
+
+@app.post("/analyze")
+async def analyze(file: UploadFile = File(...)):
+    contents = await file.read()
+    result = process_image(contents)
+    return {"glucose_estimate": result}
+```
+
+---
+
+# 📌 6. Pipeline de Processamento da Imagem (OpenCV)
+
+Arquivo `preprocessing.py`
+
+* Converte a imagem para HSV
+* Calcula valor médio de brilho/intensidade
+* Mapeia o valor em uma curva simples (placeholder)
+
+```python
+import numpy as np
+import cv2
+
+def process_image(image_bytes):
+    np_arr = np.frombuffer(image_bytes, np.uint8)
+    img = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
+    hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+    mean_val = hsv[:,:,2].mean()
+    glucose_estimate = int((mean_val / 255) * 200)
+    return glucose_estimate
+```
+
+> 🔧 **Obs:** esse modelo é apenas demonstrativo e deve ser ajustado com uma curva real de calibração.
+
+---
+
+# 📌 7. Dockerfile
+
+```dockerfile
+FROM python:3.10-slim
+WORKDIR /app
+COPY . .
+RUN pip install fastapi uvicorn opencv-python-headless numpy
+CMD ["uvicorn", "fastapi_app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+```
+
+### Como rodar com Docker
+
+```bash
+docker build -t glicose-api .
+docker run -p 8000:8000 glicose-api
+```
+
+Acesse:
+
+```
+http://localhost:8000/docs
+```
+
+---
+
+# 📌 8. Testando no Postman
+
+### Requisição
+
+```
+POST http://localhost:8000/analyze
+```
+
+### Body
+
+* Form‑Data
+* Key: **file**
+* Tipo: *File*
+* Enviar imagem da tira reagente
+
+---
+
+# 📌 9. Termo de Consentimento (LGPD)
+
+Incluído no arquivo:
+
+```
+consent.txt
+```
+
+Pode ser enviado automaticamente ao usuário antes da primeira análise.
+
+---
+
+# 📌 10. Possíveis Erros e Soluções
+
+### ❗ Erro: "Port should be >= 0 and < 65536"
+
+Causa:
+O Postman está acessando uma URL com um caractere invisível no final da porta, por exemplo:
+
+```
+8080⁠
+```
+
+Esse caractere é um **ZERO‑WIDTH SPACE (U+2060)**.
+
+💡 Solução: apagar a URL inteira e digitar novamente manualmente.
+
+---
+
+# 📌 11. Melhorias Futuras
+
+* Modelo de regressão calibrado com amostras reais
+* Normalização de iluminação usando gray‑world
+* App mobile nativo
+* Dashboard para profissionais de saúde
+
+---
+
+# 📌 12. Autores
+
+Projeto desenvolvido para fins acadêmicos.
+
+Integrantes:
+
+* Beatriz Menezes
+* Jannderson Oliveira
+* Arthur Felipe
+* Alisson Braz
+
+Professor: **Jacson Rodrigues Barbosa**
+Disciplina: **Design de Software — UFG**
+Ano: **2025**
+
+---
+
