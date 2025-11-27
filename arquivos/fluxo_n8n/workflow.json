@@ -96,6 +96,138 @@
     },
     {
       "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "check-agendamento-1",
+              "leftValue": "={{ $json.message ? $json.message.toLowerCase() : '' }}",
+              "rightValue": "sim",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            },
+            {
+              "id": "check-agendamento-2",
+              "leftValue": "={{ $json.message ? $json.message.toLowerCase() : '' }}",
+              "rightValue": "quero",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            },
+            {
+              "id": "check-agendamento-3",
+              "leftValue": "={{ $json.message ? $json.message.toLowerCase() : '' }}",
+              "rightValue": "agendar",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            },
+            {
+              "id": "check-agendamento-4",
+              "leftValue": "={{ $json.message ? $json.message.toLowerCase() : '' }}",
+              "rightValue": "marcar",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        448,
+        80
+      ],
+      "id": "check-agendamento-response",
+      "name": "Verificar resposta agendamento"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "clinicas-data",
+              "name": "clinicas",
+              "value": "=[{\"id\": 1, \"nome\": \"Clínica Saúde Total\", \"endereco\": \"Av. Principal, 123 - Centro\", \"telefone\": \"(62) 3214-5678\"}, {\"id\": 2, \"nome\": \"Centro Médico Vida Saudável\", \"endereco\": \"Rua das Flores, 456 - Jardim América\", \"telefone\": \"(62) 3214-5679\"}, {\"id\": 3, \"nome\": \"Clínica Bem Estar\", \"endereco\": \"Av. Goiás, 789 - Setor Central\", \"telefone\": \"(62) 3214-5680\"}]",
+              "type": "array"
+            },
+            {
+              "id": "medicos-data",
+              "name": "medicos",
+              "value": "=[{\"id\": 1, \"nome\": \"Dr. João Silva\", \"especialidade\": \"Endocrinologista\", \"clinica_id\": 1}, {\"id\": 2, \"nome\": \"Dra. Maria Santos\", \"especialidade\": \"Endocrinologista\", \"clinica_id\": 1}, {\"id\": 3, \"nome\": \"Dr. Pedro Oliveira\", \"especialidade\": \"Clínico Geral\", \"clinica_id\": 2}, {\"id\": 4, \"nome\": \"Dra. Ana Costa\", \"especialidade\": \"Endocrinologista\", \"clinica_id\": 2}, {\"id\": 5, \"nome\": \"Dr. Carlos Mendes\", \"especialidade\": \"Endocrinologista\", \"clinica_id\": 3}]",
+              "type": "array"
+            },
+            {
+              "id": "horarios-data",
+              "name": "horarios",
+              "value": "=[{\"id\": 1, \"medico_id\": 1, \"data\": \"2025-11-26\", \"horario\": \"08:00\", \"disponivel\": true}, {\"id\": 2, \"medico_id\": 1, \"data\": \"2025-11-26\", \"horario\": \"09:00\", \"disponivel\": true}, {\"id\": 3, \"medico_id\": 1, \"data\": \"2025-11-26\", \"horario\": \"14:00\", \"disponivel\": true}, {\"id\": 4, \"medico_id\": 2, \"data\": \"2025-11-26\", \"horario\": \"10:00\", \"disponivel\": true}, {\"id\": 5, \"medico_id\": 2, \"data\": \"2025-11-27\", \"horario\": \"08:30\", \"disponivel\": true}, {\"id\": 6, \"medico_id\": 3, \"data\": \"2025-11-27\", \"horario\": \"09:00\", \"disponivel\": true}, {\"id\": 7, \"medico_id\": 4, \"data\": \"2025-11-27\", \"horario\": \"14:30\", \"disponivel\": true}, {\"id\": 8, \"medico_id\": 5, \"data\": \"2025-11-28\", \"horario\": \"08:00\", \"disponivel\": true}]",
+              "type": "array"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        672,
+        80
+      ],
+      "id": "dados-agendamento",
+      "name": "Dados Agendamento"
+    },
+    {
+      "parameters": {
+        "jsCode": "const clinicas = $input.item.json.clinicas;\nconst medicos = $input.item.json.medicos;\nconst horarios = $input.item.json.horarios;\n\nlet mensagem = \"🏥 *Opções de Agendamento Disponíveis*\\n\\n\";\n\n// Agrupar por clínica\nclinicas.forEach(clinica => {\n  mensagem += `*${clinica.nome}*\\n`;\n  mensagem += `📍 ${clinica.endereco}\\n`;\n  mensagem += `📞 ${clinica.telefone}\\n\\n`;\n  \n  // Médicos desta clínica\n  const medicosClinica = medicos.filter(m => m.clinica_id === clinica.id);\n  medicosClinica.forEach(medico => {\n    mensagem += `👨‍⚕️ *${medico.nome}* - ${medico.especialidade}\\n`;\n    \n    // Horários disponíveis deste médico\n    const horariosMedico = horarios.filter(h => h.medico_id === medico.id && h.disponivel);\n    if (horariosMedico.length > 0) {\n      horariosMedico.forEach(horario => {\n        const dataFormatada = new Date(horario.data + 'T' + horario.horario).toLocaleDateString('pt-BR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });\n        mensagem += `   📅 ${dataFormatada} às ${horario.horario}\\n`;\n      });\n    } else {\n      mensagem += `   ⚠️ Sem horários disponíveis no momento\\n`;\n    }\n    mensagem += `\\n`;\n  });\n  mensagem += `\\n`;\n});\n\nmensagem += \"\\n💬 *Para agendar, responda com o número da opção desejada ou entre em contato diretamente com a clínica.*\";\n\nreturn {\n  json: {\n    mensagem_agendamento: mensagem\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        896,
+        80
+      ],
+      "id": "formatar-opcoes-agendamento",
+      "name": "Formatar Opções Agendamento"
+    },
+    {
+      "parameters": {
+        "resource": "Chatting",
+        "operation": "Send Text",
+        "session": "={{ $('Dados').item.json.session }}",
+        "chatId": "={{ $('Dados').item.json.chatId }}",
+        "text": "={{ $json.mensagem_agendamento }}",
+        "requestOptions": {}
+      },
+      "type": "n8n-nodes-waha.WAHA",
+      "typeVersion": 202411,
+      "position": [
+        1120,
+        80
+      ],
+      "id": "enviar-opcoes-agendamento",
+      "name": "Enviar Opções Agendamento",
+      "credentials": {
+        "wahaApi": {
+          "id": "zueNblXSQ87QL5xY",
+          "name": "WAHA account"
+        }
+      }
+    },
+    {
+      "parameters": {
         "rules": {
           "values": [
             {
@@ -409,6 +541,63 @@
           "name": "WAHA account"
         }
       }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "check-range-not-normal",
+              "leftValue": "={{ $('HTTP Request').item.json.range }}",
+              "rightValue": "normal",
+              "operator": {
+                "type": "string",
+                "operation": "notEqual"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1472,
+        -192
+      ],
+      "id": "verificar-range-nao-normal",
+      "name": "Verificar se não é normal"
+    },
+    {
+      "parameters": {
+        "resource": "Chatting",
+        "operation": "Send Text",
+        "session": "={{ $('Dados').item.json.session }}",
+        "chatId": "={{ $('Dados').item.json.chatId }}",
+        "text": "⚠️ *Atenção!*\n\nSeu resultado indica uma situação que requer acompanhamento médico.\n\nDeseja agendar uma consulta para avaliação mais detalhada?\n\nResponda com:\n✅ *Sim* - para ver opções de agendamento\n❌ *Não* - para encerrar",
+        "requestOptions": {}
+      },
+      "type": "n8n-nodes-waha.WAHA",
+      "typeVersion": 202411,
+      "position": [
+        1696,
+        -192
+      ],
+      "id": "perguntar-agendamento",
+      "name": "Perguntar sobre agendamento",
+      "credentials": {
+        "wahaApi": {
+          "id": "zueNblXSQ87QL5xY",
+          "name": "WAHA account"
+        }
+      }
     }
   ],
   "pinData": {},
@@ -428,7 +617,47 @@
       "main": [
         [
           {
+            "node": "Verificar resposta agendamento",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verificar resposta agendamento": {
+      "main": [
+        [
+          {
+            "node": "Dados Agendamento",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
             "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Dados Agendamento": {
+      "main": [
+        [
+          {
+            "node": "Formatar Opções Agendamento",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Formatar Opções Agendamento": {
+      "main": [
+        [
+          {
+            "node": "Enviar Opções Agendamento",
             "type": "main",
             "index": 0
           }
@@ -540,6 +769,29 @@
             "index": 0
           }
         ]
+      ]
+    },
+    "Enviar relatório aferição": {
+      "main": [
+        [
+          {
+            "node": "Verificar se não é normal",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verificar se não é normal": {
+      "main": [
+        [
+          {
+            "node": "Perguntar sobre agendamento",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
       ]
     }
   },

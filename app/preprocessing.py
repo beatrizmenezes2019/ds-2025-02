@@ -1,6 +1,6 @@
 import requests
 import io
-from fastapi import UploadFile
+from fastapi import UploadFile, HTTPException
 from starlette.datastructures import UploadFile as StarletteUploadFile
 
 def download_url_to_upload_file(url: str) -> UploadFile:
