@@ -10,10 +10,10 @@
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2.1,
       "position": [
-        0,
-        -80
+        -608,
+        296
       ],
-      "id": "f7cbf840-84a3-4014-be4e-d3fa8fc307d6",
+      "id": "edc1f0e8-abde-4501-9a5a-217ca36111b4",
       "name": "Webhook",
       "webhookId": "0868fa46-f74b-4034-bdcb-fabffeab9233"
     },
@@ -88,17 +88,17 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        224,
-        -80
+        -384,
+        296
       ],
-      "id": "72ca4df4-5445-4d9e-b047-4994b2e2ac1f",
+      "id": "77ec5e4f-42b8-4248-9671-268f67643fcb",
       "name": "Dados"
     },
     {
       "parameters": {
         "conditions": {
           "options": {
-            "caseSensitive": false,
+            "caseSensitive": true,
             "leftValue": "",
             "typeValidation": "strict",
             "version": 2
@@ -148,10 +148,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        448,
-        80
+        -160,
+        296
       ],
-      "id": "check-agendamento-response",
+      "id": "e2a07e68-3e9e-4eb8-8266-a45e80e15a40",
       "name": "Verificar resposta agendamento"
     },
     {
@@ -183,23 +183,23 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        672,
-        80
+        64,
+        592
       ],
-      "id": "dados-agendamento",
+      "id": "d3667e58-7be4-476a-8933-5084dc772d29",
       "name": "Dados Agendamento"
     },
     {
       "parameters": {
-        "jsCode": "const clinicas = $input.item.json.clinicas;\nconst medicos = $input.item.json.medicos;\nconst horarios = $input.item.json.horarios;\n\nlet mensagem = \"🏥 *Opções de Agendamento Disponíveis*\\n\\n\";\n\n// Agrupar por clínica\nclinicas.forEach(clinica => {\n  mensagem += `*${clinica.nome}*\\n`;\n  mensagem += `📍 ${clinica.endereco}\\n`;\n  mensagem += `📞 ${clinica.telefone}\\n\\n`;\n  \n  // Médicos desta clínica\n  const medicosClinica = medicos.filter(m => m.clinica_id === clinica.id);\n  medicosClinica.forEach(medico => {\n    mensagem += `👨‍⚕️ *${medico.nome}* - ${medico.especialidade}\\n`;\n    \n    // Horários disponíveis deste médico\n    const horariosMedico = horarios.filter(h => h.medico_id === medico.id && h.disponivel);\n    if (horariosMedico.length > 0) {\n      horariosMedico.forEach(horario => {\n        const dataFormatada = new Date(horario.data + 'T' + horario.horario).toLocaleDateString('pt-BR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });\n        mensagem += `   📅 ${dataFormatada} às ${horario.horario}\\n`;\n      });\n    } else {\n      mensagem += `   ⚠️ Sem horários disponíveis no momento\\n`;\n    }\n    mensagem += `\\n`;\n  });\n  mensagem += `\\n`;\n});\n\nmensagem += \"\\n💬 *Para agendar, responda com o número da opção desejada ou entre em contato diretamente com a clínica.*\";\n\nreturn {\n  json: {\n    mensagem_agendamento: mensagem\n  }\n};"
+        "jsCode": "const clinicas = $input.item.json.clinicas;\nconst medicos = $input.item.json.medicos;\nconst horarios = $input.item.json.horarios;\n\nlet mensagem = \"🏥 *Opções de Agendamento Disponíveis*\\n\\n\";\n\n// Agrupar por clínica\nclinicas.forEach(clinica => {\n  mensagem += `*${clinica.nome}*\\n`;\n  mensagem += `📍 ${clinica.endereco}\\n`;\n  mensagem += `📞 ${clinica.telefone}\\n\\n`;\n  \n  // Médicos desta clínica\n  const medicosClinica = medicos.filter(m => m.clinica_id === clinica.id);\n  medicosClinica.forEach(medico => {\n    mensagem += `👨‍⚕️ *${medico.nome}* - ${medico.especialidade}\\n`;\n    \n    // Horários disponíveis deste médico\n    const horariosMedico = horarios.filter(h => h.medico_id === medico.id && h.disponivel);\n    if (horariosMedico.length > 0) {\n      horariosMedico.forEach(horario => {\n        const dataFormatada = new Date(horario.data + 'T' + horario.horario).toLocaleDateString('pt-BR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });\n        mensagem += `   📅 ${dataFormatada} às ${horario.horario}\\n`;\n      });\n    } else {\n      mensagem += `   ⚠️ Sem horários disponíveis no momento\\n`;\n    }\n    mensagem += `\\n`;\n  });\n  mensagem += `\\n`;\n});\n\nmensagem += \"\\n💬 *Para agendar, entre em contato diretamente com a clínica.*\";\n\nreturn {\n  json: {\n    mensagem_agendamento: mensagem\n  }\n};"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        896,
-        80
+        288,
+        592
       ],
-      "id": "formatar-opcoes-agendamento",
+      "id": "03c3fd18-77dd-4373-a8bc-45d38d7724b9",
       "name": "Formatar Opções Agendamento"
     },
     {
@@ -214,15 +214,15 @@
       "type": "n8n-nodes-waha.WAHA",
       "typeVersion": 202411,
       "position": [
-        1120,
-        80
+        576,
+        592
       ],
-      "id": "enviar-opcoes-agendamento",
+      "id": "0b07c9f9-5c5c-42b7-882e-64b65918c56c",
       "name": "Enviar Opções Agendamento",
       "credentials": {
         "wahaApi": {
-          "id": "zueNblXSQ87QL5xY",
-          "name": "WAHA account"
+          "id": "KXDJSMkTQ7tf0CDY",
+          "name": "WAHA account 2"
         }
       }
     },
@@ -282,10 +282,10 @@
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3.3,
       "position": [
-        672,
-        16
+        288,
+        296
       ],
-      "id": "ad063777-f19b-42aa-baa7-1d54dff902d4",
+      "id": "5f93d46c-8b7f-44bf-a553-5e5f9349afa0",
       "name": "Switch-message"
     },
     {
@@ -293,16 +293,16 @@
         "promptType": "define",
         "text": "={{ $('Dados').item.json.message }}",
         "options": {
-          "systemMessage": "Você é uma assistente que sabe tudo sobre aferição de glicose por meio de análise de uma imagem colorimétrica de um papel reagente em contato com saliva."
+          "systemMessage": "Você é uma assistente que sabe tudo sobre aferição de glicose por meio de análise de uma imagem colorimétrica de um papel reagente em contato com saliva. As pessoas que você irá atender terão a possibilidade de enviar uma foto do papel de aferição de glicose com o resultado, você terá que dar essa opção para elas."
         }
       },
       "type": "@n8n/n8n-nodes-langchain.agent",
       "typeVersion": 3,
       "position": [
-        896,
-        16
+        512,
+        192
       ],
-      "id": "dc1a5a7c-9b8e-4dc4-aa7b-cf41c46a91ce",
+      "id": "7221e91d-ae6e-4a53-b014-4173bc63f455",
       "name": "AI Agent"
     },
     {
@@ -315,15 +315,15 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
       "typeVersion": 1,
       "position": [
-        864,
-        224
+        520,
+        416
       ],
-      "id": "58e29ff0-981b-45c9-8268-91320956283d",
+      "id": "caa9032a-f1d6-42d3-a51c-1994d88387f0",
       "name": "Google Gemini Chat Model",
       "credentials": {
         "googlePalmApi": {
-          "id": "j60fCmA9tEze5apj",
-          "name": "Google Gemini(PaLM) Api account"
+          "id": "gsblv4wk8r2vQYmU",
+          "name": "Google Gemini(PaLM) Api account 2"
         }
       }
     },
@@ -337,15 +337,15 @@
       "type": "@n8n/n8n-nodes-langchain.memoryRedisChat",
       "typeVersion": 1.5,
       "position": [
-        1040,
-        240
+        648,
+        416
       ],
-      "id": "ecea5b56-1d1d-4b29-883d-05085bf10ce9",
+      "id": "3b974bc4-0f1b-4ef6-a6ae-2b4171589505",
       "name": "Redis Chat Memory",
       "credentials": {
         "redis": {
-          "id": "nulqi91yNQIVDtV2",
-          "name": "Redis account"
+          "id": "DMr7Yh9NUsm98JJd",
+          "name": "Redis account 2"
         }
       }
     },
@@ -362,15 +362,15 @@
       "type": "n8n-nodes-waha.WAHA",
       "typeVersion": 202411,
       "position": [
-        1248,
-        16
+        864,
+        296
       ],
-      "id": "c60d6637-6c7a-4171-8e0e-4ecb16f30793",
+      "id": "9cd15972-a39c-4010-b959-6f20bc45d65a",
       "name": "Send Seen",
       "credentials": {
         "wahaApi": {
-          "id": "zueNblXSQ87QL5xY",
-          "name": "WAHA account"
+          "id": "KXDJSMkTQ7tf0CDY",
+          "name": "WAHA account 2"
         }
       }
     },
@@ -386,15 +386,15 @@
       "type": "n8n-nodes-waha.WAHA",
       "typeVersion": 202411,
       "position": [
-        1472,
-        16
+        1088,
+        296
       ],
-      "id": "ebf41b32-6007-469e-8643-e15dbbec5e41",
+      "id": "fa2662ed-5c77-4115-b5c2-d8ad93817032",
       "name": "Send a text message",
       "credentials": {
         "wahaApi": {
-          "id": "zueNblXSQ87QL5xY",
-          "name": "WAHA account"
+          "id": "KXDJSMkTQ7tf0CDY",
+          "name": "WAHA account 2"
         }
       }
     },
@@ -436,10 +436,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        448,
-        -80
+        64,
+        148
       ],
-      "id": "1b99ccd8-a19a-4839-9c56-00abf3d9c695",
+      "id": "4a707620-8294-4b6d-bb8a-b8cb0481506a",
       "name": "If"
     },
     {
@@ -461,10 +461,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.3,
       "position": [
-        832,
-        -192
+        576,
+        0
       ],
-      "id": "b8fe860a-9695-4f21-9970-6d70e7a05967",
+      "id": "b1bc9454-ed19-42db-b978-3b794776a5be",
       "name": "HTTP Request"
     },
     {
@@ -487,10 +487,10 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        608,
-        -192
+        288,
+        0
       ],
-      "id": "a205bf61-c3f2-494d-8a7d-04baf34159e3",
+      "id": "4868f643-bce7-441e-9b35-58a069f81c27",
       "name": "Tratar url imagem"
     },
     {
@@ -506,15 +506,15 @@
       "type": "n8n-nodes-waha.WAHA",
       "typeVersion": 202411,
       "position": [
-        1040,
-        -192
+        864,
+        0
       ],
-      "id": "97bb3105-8ed2-445c-b162-621abeebf571",
+      "id": "febe3804-b524-405a-b3c3-9c6e096ae58b",
       "name": "Imagem vista",
       "credentials": {
         "wahaApi": {
-          "id": "zueNblXSQ87QL5xY",
-          "name": "WAHA account"
+          "id": "KXDJSMkTQ7tf0CDY",
+          "name": "WAHA account 2"
         }
       }
     },
@@ -530,15 +530,39 @@
       "type": "n8n-nodes-waha.WAHA",
       "typeVersion": 202411,
       "position": [
-        1248,
-        -192
+        1088,
+        0
       ],
-      "id": "d61ef474-65e0-4330-85b7-606e5c84bb89",
+      "id": "5319f6c6-fcf8-4a5c-86fd-e3b3b46143c9",
       "name": "Enviar relatório aferição",
       "credentials": {
         "wahaApi": {
-          "id": "zueNblXSQ87QL5xY",
-          "name": "WAHA account"
+          "id": "KXDJSMkTQ7tf0CDY",
+          "name": "WAHA account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "Chatting",
+        "operation": "Send Text",
+        "session": "={{ $('Dados').item.json.session }}",
+        "chatId": "={{ $('Dados').item.json.chatId }}",
+        "text": "⚠️ *Atenção!*\n\nSeu resultado indica uma situação que requer acompanhamento médico.\n\nDeseja agendar uma consulta para avaliação mais detalhada?\n\nResponda com:\n✅ *Sim* - para ver opções de agendamento\n❌ *Não* - para encerrar",
+        "requestOptions": {}
+      },
+      "type": "n8n-nodes-waha.WAHA",
+      "typeVersion": 202411,
+      "position": [
+        1536,
+        0
+      ],
+      "id": "2b70b09d-7ebd-4dba-adf9-0c9000506732",
+      "name": "Perguntar sobre agendamento",
+      "credentials": {
+        "wahaApi": {
+          "id": "KXDJSMkTQ7tf0CDY",
+          "name": "WAHA account 2"
         }
       }
     },
@@ -560,44 +584,29 @@
                 "type": "string",
                 "operation": "notEqual"
               }
+            },
+            {
+              "id": "b830073e-d0f5-419d-b8f6-bc8668e30ef0",
+              "leftValue": "={{ $('HTTP Request').item.json.range }}",
+              "rightValue": "=normal",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
             }
           ],
-          "combinator": "and"
+          "combinator": "or"
         },
         "options": {}
       },
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        1472,
-        -192
+        1312,
+        0
       ],
-      "id": "verificar-range-nao-normal",
-      "name": "Verificar se não é normal"
-    },
-    {
-      "parameters": {
-        "resource": "Chatting",
-        "operation": "Send Text",
-        "session": "={{ $('Dados').item.json.session }}",
-        "chatId": "={{ $('Dados').item.json.chatId }}",
-        "text": "⚠️ *Atenção!*\n\nSeu resultado indica uma situação que requer acompanhamento médico.\n\nDeseja agendar uma consulta para avaliação mais detalhada?\n\nResponda com:\n✅ *Sim* - para ver opções de agendamento\n❌ *Não* - para encerrar",
-        "requestOptions": {}
-      },
-      "type": "n8n-nodes-waha.WAHA",
-      "typeVersion": 202411,
-      "position": [
-        1696,
-        -192
-      ],
-      "id": "perguntar-agendamento",
-      "name": "Perguntar sobre agendamento",
-      "credentials": {
-        "wahaApi": {
-          "id": "zueNblXSQ87QL5xY",
-          "name": "WAHA account"
-        }
-      }
+      "id": "f8d22861-0277-4369-b7e2-2eea204a5ef8",
+      "name": "Verificar se normal"
     }
   ],
   "pinData": {},
@@ -672,8 +681,7 @@
             "type": "main",
             "index": 0
           }
-        ],
-        []
+        ]
       ]
     },
     "Google Gemini Chat Model": {
@@ -775,23 +783,23 @@
       "main": [
         [
           {
-            "node": "Verificar se não é normal",
+            "node": "Verificar se normal",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Verificar se não é normal": {
+    "Verificar se normal": {
       "main": [
+        [],
         [
           {
             "node": "Perguntar sobre agendamento",
             "type": "main",
             "index": 0
           }
-        ],
-        []
+        ]
       ]
     }
   },
@@ -799,11 +807,11 @@
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "c15bcc05-0594-482f-92d9-c44028a7f8c7",
+  "versionId": "cba8c46c-c9e9-458f-b8b0-a7e42416e33c",
   "meta": {
     "templateCredsSetupCompleted": true,
-    "instanceId": "4423927cc8966524d39bf6dcdd3d191ce0e8508c2ce39c2783d7b5bc5f789442"
+    "instanceId": "0177ba3b31ff93830343884ddfada6bae30dd767f9f803dc8604757ea2c76890"
   },
-  "id": "HFCVfB4AZewZ88la",
+  "id": "ZaADUoyauVfD8CGC",
   "tags": []
 }
